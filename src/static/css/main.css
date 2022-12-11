@@ -1,3 +1,50 @@
-.main_body div {
-    display: block;
+body {
+  /* background-color: #000000; */
+  /* color: #FFFFFF; */
+  background-color: #FFFFFF;
+  color: #000000;
+  font-family: 'Pretendard';
+  font-style: normal;
+  font-size: 16px;
+  width: 400px;
+  padding: 15px;
+}
+
+.main div {
+  display: flex;
+}
+
+.title {
+  font-size: 24px;
+  font-weight: 700;
+  text-align: center;
+}
+
+.input {
+  width: 100%;
+}
+
+.input>span {
+  width: 100px;
+  text-align: left;
+  line-height: 35px;
+}
+
+.input>input {
+  width: 100%;
+  height: 35px;
+  padding-left: 10px;
+  font-size: 16px
+}
+
+.password {
+  margin-bottom: 10px;
+}
+
+.button {
+  width: 100%;
+  height: 35px;
+  margin-bottom: 5px;
+  cursor: pointer;
+  font-size: 16px;
 }

@@ -3,23 +3,27 @@
 <head>
     <title>Rsquare 출퇴근 도우미 V2</title>
     <link rel="stylesheet" href="css/main.css" />
+
+    <script type="text/javascript" src="js/script.js"></script>
 </head>
 
 <body>
-    <h3>Rsquare 출퇴근 도우미 V2</h3>
-    <div class="main_body">
-        <div class="id">
+    <div class="title">
+        <h3>Rsquare 출퇴근 도우미 V2</h3>
+    </div>
+    <div class="main">
+        <div class="input id">
             <span>아이디</span>
-            <input type="text" name="id" value="" />
+            <input type="text" id="id" value="fedaykin" />
         </div>
-        <div class="password">
+        <div class="input password">
             <span>비밀번호</span>
-            <input type="password" name="password" value="" />
+            <input type="password" id="password" value="1234" />
         </div>
-        <div>
-            <button type="button">퇴근</button>
-            <button type="button">활성화</button>
-        </div>
+        <button type="button" class="button">퇴근</button>
+        <button type="button" class="button" id="activate" onclick="onActivate()">활성화</button>
+        <button type="button" class="button" id="inactivate" onclick="onInactivate()"
+            style="display: none;">비활성화</button>
     </div>
 </body>
 
