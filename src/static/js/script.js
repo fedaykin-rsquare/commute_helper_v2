@@ -1,5 +1,22 @@
 const { ipcRenderer } = require('electron');
 
+window.onload = () => {
+  ipcRenderer.on('init', (event, args) => {
+    const { id, password } = args;
+
+    if (id && id !== '' && password && password !== '') {
+      disable();
+      document.getElementById('id').value = id;
+      document.getElementById('password').value = password;
+      ipcRenderer.send('login');
+    }
+  });
+
+  ipcRenderer.on('failLogin', (event, args) => {
+    enable();
+  });
+};
+
 const onActivate = () => {
   const idElement = document.getElementById('id');
   const passwordElement = document.getElementById('password');
@@ -24,17 +41,27 @@ const onActivate = () => {
 
   ipcRenderer.send('activate', user);
 
-  idElement.disabled = true;
-  passwordElement.disabled = true;
-  document.getElementById('activate').style.display = 'none';
-  document.getElementById('inactivate').style.display = 'block';
+  disable();
 };
 
 const onInactivate = () => {
   ipcRenderer.send('inactivate', false);
 
+  enable();
+};
+
+const disable = () => {
+  document.getElementById('id').disabled = true;
+  document.getElementById('password').disabled = true;
+  document.getElementById('end').disabled = false;
+  document.getElementById('activate').style.display = 'none';
+  document.getElementById('inactivate').style.display = 'block';
+};
+
+const enable = () => {
   document.getElementById('id').disabled = false;
   document.getElementById('password').disabled = false;
+  document.getElementById('end').disabled = true;
   document.getElementById('activate').style.display = 'block';
   document.getElementById('inactivate').style.display = 'none';
 }

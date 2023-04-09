@@ -4,55 +4,53 @@ import * as fs from 'fs';
 import * as path from 'path';
 
 export class UserService {
-  private readonly user: User = {} as User;
   private readonly filePath: string = path.join(__dirname, 'user.properties');
 
-  constructor(user: User = {} as User) {
-    this.user = user;
+  constructor() {
   }
 
-  encrypt() {
-    if (this.isEmptyUserInfo()) {
-      return;
+  public encrypt(user: User) {
+    const encryptedString: Buffer = safeStorage.encryptString(`${user.id}|${user.password}`);
+
+    fs.writeFileSync(this.filePath, encryptedString.toString('base64'));
+  }
+
+  public decrypt(): User | undefined {
+    try {
+      const encryptedString: string = fs.readFileSync(this.filePath, { encoding: 'utf-8', flag: 'r' });
+      const decryptedStringList: Array<string> = safeStorage.decryptString(Buffer.from(encryptedString, 'base64')).split('|');
+
+      return {
+        id: decryptedStringList[0],
+        password: decryptedStringList[1],
+      } as User;
+    } catch (e: any) {
+      console.error(e);
+    }
+  }
+
+  public remove(): boolean {
+    try {
+      fs.writeFileSync(this.filePath, '');
+    } catch (e: any) {
+      return false;
     }
 
-    const encryptedId: Buffer = safeStorage.encryptString(this.user.id);
-    const encryptedPassword: Buffer = safeStorage.encryptString(this.user.password);
-
-    console.log('encryptedId :', encryptedId);
-    console.log('encryptedPassword :', encryptedPassword);
-
-    fs.writeFileSync(this.filePath, `${encryptedId}|${encryptedPassword}`);
-
-    /* const encrypt: Buffer = safeStorage.encryptString('123');
-
-    // this.user = {} as User;
-    console.log('encrypt :', encrypt.toJSON());
-    console.log('------------------------------------------');
-    console.log('decrypt :', safeStorage.decryptString(Buffer.from(encrypt.toJSON().data))); */
+    return true;
   }
 
-  decrypt(): User | undefined {
-    if (this.isEmptyUserInfo()) {
-      return;
-    }
+  public getUserInfo(): User | undefined {
+    const user: User | undefined = this.decrypt();
 
-    const encryptedStringList: Array<string> = fs.readFileSync(this.filePath, { encoding: 'utf-8', flag: 'r' }).split('|');
-    const decryptedId: string = safeStorage.decryptString(Buffer.from(encryptedStringList[0]));
-    const decryptedPassword: string = safeStorage.decryptString(Buffer.from(encryptedStringList[1]));
-
-    return {
-      id: decryptedId,
-      password: decryptedPassword,
-    } as User;
+    return user;
   }
 
-  private isEmptyUserInfo(): boolean {
-    if ((this.user.id && this.user.id !== '') || (this.user.password && this.user.password !== '')) {
+  /* private isEmptyUserInfo(): boolean {
+    if ((!this.user.id || this.user.id === '') || (!this.user.password || this.user.password === '')) {
       console.error('You can not encrypt about information. cause you have not your user information.');
       return true;
     }
 
     return false;
-  }
+  } */
 }

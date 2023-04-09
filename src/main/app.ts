@@ -1,7 +1,12 @@
-import electron, { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain, nativeImage, Point, Size, Tray } from 'electron';
+import electron, { app, BrowserWindow, BrowserWindowConstructorOptions, NativeImage, nativeImage, Point, powerMonitor, powerSaveBlocker, Size, Tray } from 'electron';
+import * as fs from 'fs';
+import { IpcMainEvent } from './common/common';
+import { User } from './interface/user.interface';
+import { IpcMainService } from './service/ipc.main.service';
+import { UserService } from './service/user.service';
 
-const windowWidth: number = 440;
-const windowHeight: number = 270;
+const windowWidth: number = 840; // 440
+const windowHeight: number = 370;
 const horizontalPadding: number = 15;
 const verticalPadding: number = 15;
 
@@ -34,6 +39,8 @@ const getTrayPosition = (): { x: number, y: number; } => {
 };
 
 const createWindow = () => {
+  const iconFile: Buffer = fs.readFileSync(`${__dirname}/static/images/jade-icon.png`);
+  const iconImage: NativeImage = nativeImage.createFromBuffer(iconFile, { scaleFactor: 20 });
   const windowOptions: BrowserWindowConstructorOptions = {
     width: windowWidth,
     height: windowHeight,
@@ -44,13 +51,13 @@ const createWindow = () => {
     webPreferences: {
       contextIsolation: false,
       nodeIntegration: true,
-    }
+    },
+    icon: iconImage
     // backgroundColor: '#000000'
   } as BrowserWindowConstructorOptions;
 
   const window: BrowserWindow = new BrowserWindow(windowOptions);
-  const icon = nativeImage.createFromPath(`${__dirname}/static/images/icon.png`);
-  const tray = new Tray(icon);
+  const tray: Tray = new Tray(iconImage);
 
   tray.setToolTip('출퇴근 도우미 v2');
 
@@ -70,7 +77,16 @@ const createWindow = () => {
   });
 
   window.loadFile(`${__dirname}/static/index.html`);
-  // window.webContents.openDevTools();
+  window.webContents.on('did-finish-load', () => {
+    const user: User | undefined = new UserService().decrypt();
+
+    window.webContents.send(IpcMainEvent.init, user);
+
+    if (user) {
+      window.webContents.send(IpcMainEvent.login);
+    }
+  });
+  window.webContents.openDevTools();
 
   window.on('close', () => {
     isShowWindow = false;
@@ -84,19 +100,35 @@ const createWindow = () => {
 };
 
 if (process.platform === 'darwin') {
-  app.dock.hide();
+  // app.dock.hide();
 }
 
 
-app.on('ready', createWindow);
+app.on('ready', () => {
+  createWindow();
 
-// 활성화
-ipcMain.on('activate', (event, args) => {
-  // console.log('event :', event);
-  console.log('args :', args);
+  powerMonitor.on('suspend', () => {
+    const blockerId: number = powerSaveBlocker.start('prevent-app-suspension');
+
+    console.log('blockerId on suspend in powerMonitor :', blockerId);
+  });
+
+  powerMonitor.on('resume', () => {
+    console.log('resume in powerMonitor!');
+  });
+
+  powerMonitor.on('lock-screen', () => {
+    console.log('lock-screen in powerMonitor!');
+  });
+
+  powerMonitor.on('unlock-screen', () => {
+    console.log('unlock-screen in powerMonitor!');
+  });
 });
 
-// 비활성화
-ipcMain.on('inactivate', (event, args) => {
+// const commuteService: CommuteService = new CommuteService();
+const ipcMainService: IpcMainService = new IpcMainService();
 
-});
+/* setInterval(() => {
+  console.log(dayjs().format());
+}, 1000); */
