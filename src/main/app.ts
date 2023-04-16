@@ -1,4 +1,4 @@
-import electron, { app, BrowserWindow, BrowserWindowConstructorOptions, NativeImage, nativeImage, Point, powerMonitor, powerSaveBlocker, Size, Tray } from 'electron';
+import electron, { app, BrowserWindow, BrowserWindowConstructorOptions, ipcMain, NativeImage, nativeImage, Point, powerMonitor, powerSaveBlocker, Size, Tray } from 'electron';
 import * as fs from 'fs';
 import { IpcMainEvent } from './common/common';
 import { User } from './interface/user.interface';
@@ -104,6 +104,7 @@ if (process.platform === 'darwin') {
 }
 
 
+
 app.on('ready', () => {
   createWindow();
 
@@ -115,6 +116,7 @@ app.on('ready', () => {
 
   powerMonitor.on('resume', () => {
     console.log('resume in powerMonitor!');
+    ipcMain.emit(IpcMainEvent.schedule);
   });
 
   powerMonitor.on('lock-screen', () => {
@@ -123,12 +125,8 @@ app.on('ready', () => {
 
   powerMonitor.on('unlock-screen', () => {
     console.log('unlock-screen in powerMonitor!');
+    ipcMain.emit(IpcMainEvent.schedule);
   });
 });
 
-// const commuteService: CommuteService = new CommuteService();
 const ipcMainService: IpcMainService = new IpcMainService();
-
-/* setInterval(() => {
-  console.log(dayjs().format());
-}, 1000); */

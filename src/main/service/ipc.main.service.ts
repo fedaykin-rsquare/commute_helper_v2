@@ -8,14 +8,15 @@ import { CommuteService } from './commute.service';
 import { UserService } from './user.service';
 
 export class IpcMainService {
-  public commuteService: CommuteService = new CommuteService();
-  public userService: UserService = new UserService();
-  public activate: boolean = false;
-  public loggedIn: boolean = false;
-  public success: boolean = false;
-  public close: boolean = false;
-  public startTime?: dayjs.Dayjs;
-  public endTime?: dayjs.Dayjs;
+  private commuteService: CommuteService = new CommuteService();
+  private userService: UserService = new UserService();
+  private activate: boolean = false;
+  private loggedIn: boolean = false;
+  private success: boolean = false;
+  private close: boolean = false;
+  private startTime?: dayjs.Dayjs;
+  private endTime?: dayjs.Dayjs;
+  private timer?: NodeJS.Timeout;
 
   constructor () {
     // 활성화
@@ -57,6 +58,8 @@ export class IpcMainService {
     ipcMain.on(IpcMainEvent.schedule, async (event, args) => {
       console.log('event in IpcMainEvent.schedule :', event);
       console.log('args in IpcMainEvent.schedule :', args);
+      // 타이머 초기화
+      this.timer = undefined;
 
       if (this.loggedIn) {
         const schedule = async () => {
@@ -78,8 +81,8 @@ export class IpcMainService {
           }
         };
 
-        // 8시간 마다 스케쥴 실행
-        setInterval(schedule, 8 * 60 * 60 * 1000);
+        // 30분 마다 스케쥴 실행
+        this.timer = setInterval(schedule, 30 * 60 * 1000);
       }
     });
 
